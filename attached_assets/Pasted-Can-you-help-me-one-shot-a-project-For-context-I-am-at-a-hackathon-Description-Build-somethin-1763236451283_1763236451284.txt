@@ -1,0 +1,312 @@
+Can you help me one shot a project?
+For context, I am at a hackathon.
+### Description
+Build something awesome with Locus - the payment infrastructure for AI agents. Whether you're creating fully autonomous agents, human-in-the-loop systems, or entirely new payment experiences, we want to see how you leverage programmable payments for AI.
+Locus isn't just rails - it's Ramp for agents, giving you granular control over how AI spends money. The best projects will thoughtfully use spending controls, permissions, and workflows to enable powerful agent capabilities safely.
+Possible directions (but don't limit yourself to these!):
+- **Autonomous agents** that make independent spending decisions to accomplish goals
+- **Agent-to-agent economies** where AI systems pay each other for services, data, or compute
+- **AI-powered financial tools** that help humans make better payment decisions
+- **Novel payment flows** enabled by instant, programmable transactions
+- **Multi-agent coordination** using payments as a coordination mechanism
+- **Prediction market trading agents** that use Kalshi's new announcement of USDC
+We're excited to see creative applications across any domain - research, productivity, commerce, infrastructure, entertainment, or something we haven't thought of yet. The key is demonstrating how Locus's payment rails enable new capabilities.
+Our idea is to have a phone calling agent that calls you and lets you handle transactions by phone, or like when it wants to confirm a purchase it'll call you. We want to use Vapi for the calls.
+Here is an example snippet from another project of how to use Vapi:
+#!/usr/bin/env python3
+"""
+Maritime Storm Warning Service
+Calls fishermen to warn about dangerous weather conditions at sea
+"""
+import os
+import requests
+from datetime import datetime
+from typing import Dict, List, Optional
+import json
+from dotenv import load_dotenv
+# Load environment variables
+load_dotenv()
+class StormWarningService:
+"""AI-powered storm warning system that calls fishermen with weather alerts"""
+def __init__(self):
+self.api_key = os.getenv("VAPI_API_KEY")
+self.phone_id = os.getenv("VAPI_PHONE_NUMBER_ID")
+self.assistant_id = os.getenv("STORM_WARNING_ASSISTANT_ID")
+self.simulate_mode = not bool(self.api_key)
+# Emergency contact numbers from env
+self.emergency_contacts = {
+"tony": os.getenv("TONY_PHONE_NUMBER"),
+"vyom": os.getenv("VYOM_PHONE_NUMBER"),
+"test": os.getenv("TEST_PHONE_NUMBER")
+}
+# Storm severity levels
+self.severity_levels = {
+"low": {"emoji": "⚠️", "urgency": "Advisory", "color": "yellow"},
+"moderate": {"emoji": "🌩️", "urgency": "Watch", "color": "orange"},
+"high": {"emoji": "⛈️", "urgency": "Warning", "color": "red"},
+"extreme": {"emoji": "🌪️", "urgency": "EMERGENCY", "color": "purple"}
+}
+def check_weather_conditions(self, lat: float, lon: float) -> Dict:
+"""Simulate weather condition checking (replace with real weather API)"""
+import random
+# Simulate storm data based on location
+storm_probability = random.uniform(0.1, 0.9)
+wind_speed = random.randint(5, 75) # mph
+wave_height = random.uniform(1, 15) # feet
+visibility = random.uniform(0.5, 10) # miles
+# Determine severity based on conditions
+severity = "low"
+if wind_speed > 25 or wave_height > 8:
+severity = "moderate"
+if wind_speed > 40 or wave_height > 12:
+severity = "high"
+if wind_speed > 60 or wave_height > 15:
+severity = "extreme"
+return {
+"storm_probability": storm_probability,
+"wind_speed_mph": wind_speed,
+"wave_height_ft": wave_height,
+"visibility_miles": visibility,
+"severity": severity,
+"location": {"lat": lat, "lon": lon},
+"timestamp": datetime.now().isoformat(),
+"conditions": self._get_condition_description(wind_speed, wave_height, visibility)
+}
+def _get_condition_description(self, wind: int, waves: float, visibility: float) -> str:
+"""Generate human-readable condition description"""
+conditions = []
+if wind > 50:
+conditions.append("hurricane-force winds")
+elif wind > 35:
+conditions.append("gale-force winds")
+elif wind > 25:
+conditions.append("strong winds")
+if waves > 12:
+conditions.append("very dangerous seas")
+elif waves > 8:
+conditions.append("rough seas")
+elif waves > 4:
+conditions.append("choppy waters")
+if visibility < 1:
+conditions.append("near-zero visibility")
+elif visibility < 3:
+conditions.append("poor visibility")
+return ", ".join(conditions) if conditions else "moderate conditions"
+def generate_warning_message(self, weather_data: Dict, vessel_name: str = None) -> str:
+"""Generate personalized storm warning message"""
+severity = weather_data["severity"]
+severity_info = self.severity_levels[severity]
+vessel_part = f" aboard the {vessel_name}" if vessel_name else ""
+message = f"""
+🚨 MARITIME STORM {severity_info['urgency'].upper()} 🚨
+Captain{vessel_part}, this is your SakanaScope weather alert system.
+IMMEDIATE WEATHER CONDITIONS:
+• Wind Speed: {weather_data['wind_speed_mph']} mph
+• Wave Height: {weather_data['wave_height_ft']:.1f} feet
+• Visibility: {weather_data['visibility_miles']:.1f} miles
+• Conditions: {weather_data['conditions']}
+RECOMMENDATION: {"SEEK IMMEDIATE SHELTER" if severity in ["high", "extreme"] else "EXERCISE EXTREME CAUTION"}
+Your safety is our priority. Please respond if you need assistance with navigation to safe harbor.
+Stay safe out there!
+- SakanaScope Maritime Safety
+"""
+return message.strip()
+def send_storm_alert(self, phone_number: str, weather_data: Dict, vessel_name: str = None, captain_name: str = None) -> bool:
+"""Send storm warning call to fisherman"""
+severity = weather_data["severity"]
+severity_info = self.severity_levels[severity]
+if not self.phone_id or not self.assistant_id:
+print(f"❌ Storm warning system not configured properly")
+return False
+captain_name = captain_name or "Captain"
+if self.simulate_mode:
+print(f"{severity_info['emoji']} [SIMULATED] Storm Warning Alert")
+print(f"📞 Calling: {phone_number}")
+print(f"🚢 Vessel: {vessel_name or 'Unknown'}")
+print(f"👨‍✈️ Captain: {captain_name}")
+print(f"⚠️ Severity: {severity.upper()}")
+print(f"💨 Wind: {weather_data['wind_speed_mph']} mph")
+print(f"🌊 Waves: {weather_data['wave_height_ft']:.1f} ft")
+print("\n📢 Message:")
+print(self.generate_warning_message(weather_data, vessel_name))
+return True
+# Prepare VAPI call payload
+warning_message = self.generate_warning_message(weather_data, vessel_name)
+payload = {
+"phoneNumberId": self.phone_id,
+"customer": {
+"number": phone_number
+},
+"assistantId": self.assistant_id,
+"assistantOverrides": {
+"variableValues": {
+"captainName": captain_name,
+"vesselName": vessel_name or "your vessel",
+"weatherData": json.dumps(weather_data),
+"warningMessage": warning_message,
+"severityLevel": severity.upper()
+}
+}
+}
+headers = {
+"Authorization": f"Bearer {self.api_key}",
+"Content-Type": "application/json"
+}
+try:
+print(f"{severity_info['emoji']} Sending storm warning to {captain_name}...")
+response = requests.post(
+"https://api.vapi.ai/call",
+headers=headers,
+json=payload,
+timeout=30
+)
+if response.status_code == 201:
+result = response.json()
+print(f"✅ Storm warning call initiated!")
+print(f"📞 Call ID: {result.get('id', 'N/A')}")
+print(f"📱 Status: {result.get('status', 'N/A')}")
+print(f"🚢 Vessel: {vessel_name or 'Unknown'}")
+print(f"⚠️ Severity: {severity.upper()}")
+print(f"\n{severity_info['emoji']} Emergency call in progress! Captain should answer immediately!")
+return True
+else:
+print(f"❌ Storm warning call failed: {response.status_code}")
+try:
+error = response.json()
+print(f"Error: {error.get('message', 'Unknown error')}")
+except:
+print(f"Response: {response.text}")
+return False
+except Exception as e:
+print(f"❌ Error sending storm alert: {e}")
+return False
+def monitor_fishing_fleet(self, fleet_data: List[Dict]) -> List[Dict]:
+"""Monitor multiple vessels and send alerts as needed"""
+alerts_sent = []
+print("🚨 SakanaScope Maritime Storm Monitoring System")
+print("=" * 60)
+print()
+for vessel in fleet_data:
+vessel_name = vessel.get("name", "Unknown")
+captain_name = vessel.get("captain", "Captain")
+phone = vessel.get("phone")
+lat = vessel.get("lat", 55.0)
+lon = vessel.get("lon", -30.0)
+if not phone:
+print(f"⚠️ No phone number for {vessel_name}")
+continue
+# Check weather conditions
+weather = self.check_weather_conditions(lat, lon)
+print(f"🚢 {vessel_name} - {captain_name}")
+print(f" 📍 Position: {lat:.3f}, {lon:.3f}")
+print(f" 🌊 Conditions: {weather['severity'].upper()}")
+# Send alert if conditions are dangerous
+if weather["severity"] in ["high", "extreme"]:
+success = self.send_storm_alert(phone, weather, vessel_name, captain_name)
+alerts_sent.append({
+"vessel": vessel_name,
+"captain": captain_name,
+"phone": phone,
+"severity": weather["severity"],
+"success": success,
+"timestamp": datetime.now().isoformat()
+})
+print(f" 🚨 ALERT SENT!")
+elif weather["severity"] == "moderate":
+print(f" ⚠️ Caution advised")
+else:
+print(f" ✅ Safe conditions")
+print()
+return alerts_sent
+def emergency_broadcast(self, message: str, contact_list: List[str] = None) -> bool:
+"""Send emergency broadcast to all registered vessels"""
+if not contact_list:
+contact_list = [phone for phone in self.emergency_contacts.values() if phone]
+print("🚨 EMERGENCY BROADCAST - SakanaScope Maritime Safety")
+print("=" * 60)
+print(f"📢 Message: {message}")
+print()
+success_count = 0
+for phone in contact_list:
+try:
+# Create emergency weather data
+emergency_weather = {
+"severity": "extreme",
+"wind_speed_mph": 75,
+"wave_height_ft": 20.0,
+"visibility_miles": 0.5,
+"conditions": "hurricane conditions, immediate shelter required",
+"timestamp": datetime.now().isoformat()
+}
+success = self.send_storm_alert(phone, emergency_weather, "Emergency Broadcast", "All Vessels")
+if success:
+success_count += 1
+except Exception as e:
+print(f"❌ Failed to reach {phone}: {e}")
+print(f"\n📊 Emergency broadcast sent to {success_count}/{len(contact_list)} vessels")
+return success_count > 0
+def main():
+"""CLI interface for storm warning system"""
+service = StormWarningService()
+while True:
+print("\n🌊 SakanaScope Maritime Storm Warning System")
+print("=" * 50)
+print("1. 🎯 Send Single Vessel Alert")
+print("2. 🚢 Monitor Fleet")
+print("3. 📻 Emergency Broadcast")
+print("4. 🌡️ Check Weather Conditions")
+print("5. 📊 System Status")
+print("6. 🚪 Exit")
+choice = input("\nSelect option (1-6): ").strip()
+if choice == "1":
+# Single vessel alert
+phone = input("📞 Enter vessel phone number: ").strip()
+vessel_name = input("🚢 Enter vessel name (optional): ").strip()
+captain_name = input("👨‍✈️ Enter captain name (optional): ").strip()
+lat = float(input("📍 Latitude (default 55.0): ") or "55.0")
+lon = float(input("📍 Longitude (default -30.0): ") or "-30.0")
+weather = service.check_weather_conditions(lat, lon)
+service.send_storm_alert(phone, weather, vessel_name, captain_name)
+elif choice == "2":
+# Fleet monitoring demo
+demo_fleet = [
+{"name": "Atlantic Harvester", "captain": "Tony", "phone": service.emergency_contacts["tony"], "lat": 55.2, "lon": -29.8},
+{"name": "Ocean's Bounty", "captain": "Vyom", "phone": service.emergency_contacts["vyom"], "lat": 54.8, "lon": -30.2},
+{"name": "Sea Explorer", "captain": "Test Captain", "phone": service.emergency_contacts["test"], "lat": 55.5, "lon": -29.5}
+]
+service.monitor_fishing_fleet(demo_fleet)
+elif choice == "3":
+# Emergency broadcast
+message = input("📢 Enter emergency message: ").strip()
+service.emergency_broadcast(message)
+elif choice == "4":
+# Weather check
+lat = float(input("📍 Latitude (default 55.0): ") or "55.0")
+lon = float(input("📍 Longitude (default -30.0): ") or "-30.0")
+weather = service.check_weather_conditions(lat, lon)
+print(f"\n🌊 Weather Conditions at {lat:.3f}, {lon:.3f}")
+print("-" * 40)
+print(f"Severity: {weather['severity'].upper()}")
+print(f"Wind Speed: {weather['wind_speed_mph']} mph")
+print(f"Wave Height: {weather['wave_height_ft']:.1f} ft")
+print(f"Visibility: {weather['visibility_miles']:.1f} miles")
+print(f"Conditions: {weather['conditions']}")
+elif choice == "5":
+# System status
+print(f"\n🔧 System Configuration")
+print("-" * 30)
+print(f"API Key: {'✅ Configured' if service.api_key else '❌ Missing'}")
+print(f"Phone ID: {'✅ Configured' if service.phone_id else '❌ Missing'}")
+print(f"Assistant: {'✅ Configured' if service.assistant_id else '❌ Missing'}")
+print(f"Mode: {'🔄 Simulation' if service.simulate_mode else '📞 Live Calls'}")
+print(f"\nEmergency Contacts:")
+for name, phone in service.emergency_contacts.items():
+print(f" {name.title()}: {'✅ ' + phone if phone else '❌ Not configured'}")
+elif choice == "6":
+print("🌊 Stay safe on the seas! - SakanaScope Maritime Safety")
+break
+else:
+print("❌ Invalid choice. Please try again.")
+if __name__ == "__main__":
+main()
+
